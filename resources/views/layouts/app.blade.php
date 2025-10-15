@@ -141,10 +141,12 @@
                         @endif
                     @endif
 
+                    @if(optional(auth()->user()->role)->name !== 'Registration Staff')
                     <a href="{{ route('reports.index') }}"
                        class="sidebar-link {{ request()->routeIs('reports.*') ? 'active' : '' }}">
                         <i class="ri-file-chart-line"></i><span>Reports</span>
                     </a>
+                    @endif
 
                     <!-- Super Admin Section -->
                     @if(auth()->user()->role && auth()->user()->role->name === 'super_admin')
@@ -152,7 +154,7 @@
 
                         <div x-data="{ open: {{ request()->routeIs('super-admin.hospitals.*') ? 'true' : 'false' }} }" class="mb-1">
                             <button @click="open = !open" class="sidebar-link w-full justify-between {{ request()->routeIs('super-admin.hospitals.*') ? 'active' : '' }}">
-                                <span class="flex items-center"><i class="ri-hospital-line"></i><span>Hospital Management</span></span>
+                                <span class="flex items-center"><i class="ri-hospital-line"></i><span>Hospital </span></span>
                                 <svg :class="{'rotate-90': open}" class="w-4 h-4 ml-2 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                                 </svg>
@@ -165,7 +167,7 @@
                     @endif
 
                     <!-- Configuration -->
-                    @if(!$isLab)
+                    @if(!$isLab && optional(auth()->user()->role)->name !== 'Registration Staff')
                         <div x-data="{ open: @json(
                             request()->routeIs('roles.*') 
                             || request()->routeIs('users.*') 

@@ -111,7 +111,7 @@ Route::middleware('auth')->group(function(){
     Route::resource('matches', CrossMatchController::class)->only(['create','store','index']);
     Route::resource('hospitals', HospitalController::class);
     Route::resource('departments', DepartmentController::class);
-    Route::get('reports', [ReportController::class,'index'])->name('reports.index');
+    Route::get('reports', [ReportController::class,'index'])->middleware('can:view-reports')->name('reports.index');
   });
   
 Route::middleware(['auth', 'can:manage-users'])->group(function () {
@@ -156,8 +156,8 @@ Route::resource('blood-requests', BloodRequestController::class);
 // Departments
 Route::resource('departments', DepartmentController::class);
 
-// Reports Routes
-Route::prefix('reports')->name('reports.')->group(function () {
+// Reports Routes (protected by view-reports gate)
+Route::middleware(['auth', 'can:view-reports'])->prefix('reports')->name('reports.')->group(function () {
     Route::get('/', [ReportController::class, 'index'])->name('index');
     Route::get('/blood-requests', [ReportController::class, 'bloodRequests'])->name('blood-requests');
     Route::get('/blood-type-distribution', [ReportController::class, 'bloodTypeDistribution'])->name('blood-type-distribution');

@@ -31,5 +31,14 @@ class AppServiceProvider extends ServiceProvider
             // Only role “admin” can manage roles/users/settings:
             return in_array(optional($user->role)->name, ['admin', 'hospital_admin']);
         });
+
+        // Users with role 'registration_staff' must NOT view reports
+        Gate::define('view-reports', function (User $user) {
+            $roleName = optional($user->role)->name;
+            if ($roleName === 'registration_staff') {
+                return false;
+            }
+            return true;
+        });
     }
 }
