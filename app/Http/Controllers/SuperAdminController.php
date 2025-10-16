@@ -88,8 +88,11 @@ class SuperAdminController extends Controller
                 'status' => $validated['status'],
             ]);
 
-            // Create initial hospital admin user
-            $hospitalAdminRole = Role::where('name', 'hospital_admin')->first();
+            // Ensure the hospital_admin role exists (create if missing)
+            $hospitalAdminRole = Role::firstOrCreate(
+                ['name' => 'hospital_admin'],
+                ['description' => 'Hospital Administrator']
+            );
             
             $adminUser = User::create([
                 'name' => $validated['admin_name'],
