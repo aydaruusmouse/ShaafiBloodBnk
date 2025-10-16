@@ -8,7 +8,7 @@ export default defineConfig({
             refresh: true,
         }),
     ],
-    base: '/hargeisa/', // Match your subdirectory path
+    base: '/', // Use root path since assets are being requested from root domain
     build: {
         outDir: 'public/build',
         assetsDir: 'assets',
