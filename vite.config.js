@@ -8,4 +8,9 @@ export default defineConfig({
             refresh: true,
         }),
     ],
+    base: '/hargeisa/', // Match your subdirectory path
+    build: {
+        outDir: 'public/build',
+        assetsDir: 'assets',
+    },
 });
