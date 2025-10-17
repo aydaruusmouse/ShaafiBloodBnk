@@ -22,3 +22,13 @@ console.log('Vite config:', {
         assetsDir: 'assets',
     },
 });
+console.log('Environment:', process.env.NODE_ENV);
+console.log('Base:', process.env.BASE_URL);
+console.log('App URL:', process.env.APP_URL);
+console.log('App Name:', process.env.APP_NAME);
+console.log('App Environment:', process.env.APP_ENV);
+console.log('App Debug:', process.env.APP_DEBUG);
+console.log('App URL:', process.env.APP_URL);
+console.log('App Name:', process.env.APP_NAME);
+console.log('App Environment:', process.env.APP_ENV);
+console.log('App Debug:', process.env.APP_DEBUG);
