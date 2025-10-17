@@ -14,3 +14,11 @@ export default defineConfig({
         assetsDir: 'assets',
     },
 });
+
+console.log('Vite config:', {
+    base: '/',
+    build: {
+        outDir: 'public/build',
+        assetsDir: 'assets',
+    },
+});
