@@ -32,3 +32,5 @@ console.log('App URL:', process.env.APP_URL);
 console.log('App Name:', process.env.APP_NAME);
 console.log('App Environment:', process.env.APP_ENV);
 console.log('App Debug:', process.env.APP_DEBUG);
+
+console.log('Process:', process);
