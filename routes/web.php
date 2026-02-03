@@ -163,6 +163,8 @@ Route::middleware(['auth', 'can:view-reports'])->prefix('reports')->name('report
     Route::get('/blood-type-distribution', [ReportController::class, 'bloodTypeDistribution'])->name('blood-type-distribution');
     Route::get('/hospital-statistics', [ReportController::class, 'hospitalStatistics'])->name('hospital-statistics');
     Route::get('/department-statistics', [ReportController::class, 'departmentStatistics'])->name('department-statistics');
+    Route::get('/inventory', [ReportController::class, 'inventoryReport'])->name('inventory');
+    Route::get('/monthly-summary', [ReportController::class, 'monthlySummary'])->name('monthly-summary');
     Route::get('/export-blood-requests', [ReportController::class, 'exportBloodRequests'])->name('export-blood-requests');
 });
 

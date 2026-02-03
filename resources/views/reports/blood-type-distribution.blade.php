@@ -27,7 +27,8 @@
                             <span class="text-sm text-gray-600">{{ $item->total }} requests</span>
                         </div>
                         <div class="w-full bg-gray-200 rounded-full h-2.5">
-                            <div class="bg-blue-600 h-2.5 rounded-full" style="width: {{ ($item->total / $distribution->sum('total')) * 100 }}%"></div>
+                            @php $totalSum = $distribution->sum('total'); @endphp
+                            <div class="bg-blue-600 h-2.5 rounded-full" style="width: {{ $totalSum > 0 ? ($item->total / $totalSum) * 100 : 0 }}%"></div>
                         </div>
                     @endforeach
                 </div>
@@ -43,12 +44,18 @@ document.addEventListener('DOMContentLoaded', function() {
     const ctx = document.getElementById('bloodTypeChart').getContext('2d');
     const data = @json($distribution);
     
+    const labels = data.map(item => item.blood_group);
+    const values = data.map(item => item.total);
+    if (labels.length === 0) {
+        labels.push('No data');
+        values.push(1);
+    }
     new Chart(ctx, {
         type: 'pie',
         data: {
-            labels: data.map(item => item.blood_group),
+            labels: labels,
             datasets: [{
-                data: data.map(item => item.total),
+                data: values,
                 backgroundColor: [
                     '#EF4444', // Red
                     '#F97316', // Orange

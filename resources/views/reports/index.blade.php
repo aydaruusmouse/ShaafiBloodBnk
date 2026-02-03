@@ -49,6 +49,28 @@
                     </a>
                 </div>
             </div>
+
+            <!-- Inventory Report -->
+            <div class="bg-white overflow-hidden shadow-sm rounded-lg">
+                <div class="p-6">
+                    <h2 class="text-lg font-medium text-gray-900 mb-4">Inventory Report</h2>
+                    <p class="text-gray-600 mb-4">View blood inventory by status, blood group, and expiry with filters.</p>
+                    <a href="{{ route('reports.inventory') }}" class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700">
+                        View Report
+                    </a>
+                </div>
+            </div>
+
+            <!-- Monthly Summary Report -->
+            <div class="bg-white overflow-hidden shadow-sm rounded-lg">
+                <div class="p-6">
+                    <h2 class="text-lg font-medium text-gray-900 mb-4">Monthly Summary Report</h2>
+                    <p class="text-gray-600 mb-4">Filter by month and blood group. Total donors, eligible donors (vs last month), pending requests, available units, and blood group distribution.</p>
+                    <a href="{{ route('reports.monthly-summary') }}" class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700">
+                        View Report
+                    </a>
+                </div>
+            </div>
         </div>
     </div>
 </div>

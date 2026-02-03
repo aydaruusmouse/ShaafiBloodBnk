@@ -71,21 +71,21 @@ class User extends Authenticatable
 
     public function isAdmin(): bool
     {
-        return $this->role->name === 'admin';
+        return optional($this->role)->name === 'admin';
     }
 
     public function isBloodBankStaff(): bool
     {
-        return $this->role->name === 'blood_bank_staff';
+        return optional($this->role)->name === 'blood_bank_staff';
     }
 
     public function isDoctor(): bool
     {
-        return $this->role->name === 'doctor';
+        return optional($this->role)->name === 'doctor';
     }
 
     public function isLab(): bool
     {
-        return $this->role->name === 'lab';
+        return optional($this->role)->name === 'lab';
     }
 }

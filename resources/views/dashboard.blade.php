@@ -40,10 +40,10 @@
                                 <dt class="text-sm font-medium text-gray-500 truncate">Total Donors</dt>
                                 <dd class="flex items-baseline">
                                     <div class="text-2xl font-semibold text-gray-900">{{ $totalDonors }}</div>
-                                    <div class="ml-2 flex items-baseline text-sm font-semibold text-green-600">
-                                        <i class="ri-arrow-up-line"></i>
-                                        <span class="sr-only">Increased by</span>
-                                        {{ number_format(($totalDonors / max($totalDonors - 1, 1)) * 100 - 100, 1) }}%
+                                    <div class="ml-2 flex items-baseline text-sm font-semibold {{ ($donorsIncreasePct ?? 0) >= 0 ? 'text-green-600' : 'text-red-600' }}">
+                                        <i class="ri-arrow-{{ ($donorsIncreasePct ?? 0) >= 0 ? 'up' : 'down' }}-line"></i>
+                                        <span class="sr-only">vs last month</span>
+                                        {{ number_format($donorsIncreasePct ?? 0, 1) }}%
                                     </div>
                                 </dd>
                             </dl>
@@ -64,10 +64,10 @@
                                 <dt class="text-sm font-medium text-gray-500 truncate">Eligible Donors</dt>
                                 <dd class="flex items-baseline">
                                     <div class="text-2xl font-semibold text-gray-900">{{ $eligibleDonors }}</div>
-                                    <div class="ml-2 flex items-baseline text-sm font-semibold text-green-600">
-                                        <i class="ri-arrow-up-line"></i>
-                                        <span class="sr-only">Increased by</span>
-                                        {{ number_format(($eligibleDonors / max($totalDonors, 1)) * 100, 1) }}%
+                                    <div class="ml-2 flex items-baseline text-sm font-semibold {{ ($eligibleIncreasePct ?? 0) >= 0 ? 'text-green-600' : 'text-red-600' }}">
+                                        <i class="ri-arrow-{{ ($eligibleIncreasePct ?? 0) >= 0 ? 'up' : 'down' }}-line"></i>
+                                        <span class="sr-only">vs last month</span>
+                                        {{ number_format($eligibleIncreasePct ?? 0, 1) }}%
                                     </div>
                                 </dd>
                             </dl>
@@ -142,6 +142,105 @@
             </div>
         </div>
 
+        <!-- Monthly Overview (current month — same look as overall dashboard) -->
+        @if(!empty($monthlyOverview))
+        @php $month = $monthlyOverview[0]; @endphp
+        <div class="mb-8">
+            <div class="px-1 mb-6">
+                <h3 class="text-lg font-semibold text-gray-900">Monthly Overview <span class="font-mono text-indigo-600">({{ $month['code'] }})</span> — {{ $month['label'] }}</h3>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <div class="bg-white rounded-xl shadow-sm hover:shadow-lg transition-shadow duration-300 overflow-hidden">
+                    <div class="p-5">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-lg p-3">
+                                <i class="ri-user-line text-white text-2xl"></i>
+                            </div>
+                            <div class="ml-5 w-0 flex-1">
+                                <dl>
+                                    <dt class="text-sm font-medium text-gray-500 truncate">Total Donors</dt>
+                                    <dd class="text-2xl font-semibold text-gray-900">{{ $month['total_donors'] }}</dd>
+                                </dl>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl shadow-sm hover:shadow-lg transition-shadow duration-300 overflow-hidden">
+                    <div class="p-5">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0 bg-gradient-to-br from-green-500 to-green-600 rounded-lg p-3">
+                                <i class="ri-check-line text-white text-2xl"></i>
+                            </div>
+                            <div class="ml-5 w-0 flex-1">
+                                <dl>
+                                    <dt class="text-sm font-medium text-gray-500 truncate">Eligible Donors</dt>
+                                    <dd class="text-2xl font-semibold text-gray-900">{{ $month['eligible_donors'] }}</dd>
+                                </dl>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl shadow-sm hover:shadow-lg transition-shadow duration-300 overflow-hidden">
+                    <div class="p-5">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0 bg-gradient-to-br from-red-500 to-red-600 rounded-lg p-3">
+                                <i class="ri-heart-pulse-line text-white text-2xl"></i>
+                            </div>
+                            <div class="ml-5 w-0 flex-1">
+                                <dl>
+                                    <dt class="text-sm font-medium text-gray-500 truncate">Pending Requests</dt>
+                                    <dd class="text-2xl font-semibold text-gray-900">{{ $month['pending_requests'] }}</dd>
+                                </dl>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl shadow-sm hover:shadow-lg transition-shadow duration-300 overflow-hidden">
+                    <div class="p-5">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg p-3">
+                                <i class="ri-drop-line text-white text-2xl"></i>
+                            </div>
+                            <div class="ml-5 w-0 flex-1">
+                                <dl>
+                                    <dt class="text-sm font-medium text-gray-500 truncate">Available Units</dt>
+                                    <dd class="text-2xl font-semibold text-gray-900">{{ $month['available_units'] }}</dd>
+                                </dl>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white rounded-xl shadow-sm">
+                <div class="px-6 py-5 border-b border-gray-200">
+                    <h3 class="text-lg font-semibold text-gray-900">Blood Group Distribution</h3>
+                </div>
+                <div class="p-6">
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+                        @forelse($month['blood_group_stats'] ?? [] as $group => $count)
+                            <div class="bg-gray-50 rounded-lg p-4 hover:bg-gray-100 transition-colors duration-200">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <div class="text-sm font-medium text-gray-500">{{ $group }}</div>
+                                        <div class="mt-1 text-2xl font-semibold text-gray-900">{{ $count }}</div>
+                                    </div>
+                                    <div class="text-sm text-gray-500">
+                                        {{ $month['month_total'] > 0 ? number_format(($count / $month['month_total']) * 100, 1) : 0 }}%
+                                    </div>
+                                </div>
+                                <div class="mt-2 w-full bg-gray-200 rounded-full h-2">
+                                    <div class="bg-blue-600 h-2 rounded-full" style="width: {{ $month['month_total'] > 0 ? ($count / $month['month_total']) * 100 : 0 }}%"></div>
+                                </div>
+                            </div>
+                        @empty
+                            <p class="text-sm text-gray-500 col-span-full py-4">No donors this month</p>
+                        @endforelse
+                    </div>
+                </div>
+            </div>
+        </div>
+        @endif
+
         <!-- Recent Activities -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <!-- Recent Donors -->
@@ -202,7 +301,7 @@
                             <div class="flex items-center justify-between">
                                 <div>
                                     <div class="text-sm font-medium text-gray-900">
-                                        {{ $request->hospital->name }}
+                                        {{ $request->hospital?->name ?? 'N/A' }}
                                     </div>
                                     <div class="text-sm text-gray-500">
                                         {{ $request->blood_group }} · 

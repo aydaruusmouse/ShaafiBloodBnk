@@ -113,11 +113,11 @@
                         @forelse($bloodRequests as $request)
                             <tr>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $request->id }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $request->hospital->name }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $request->department->name }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $request->patient->name }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $request->blood_group }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $request->units_needed }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $request->hospital?->name ?? '—' }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $request->department?->name ?? '—' }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $request->patient_name ?? $request->patient?->name ?? '—' }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $request->blood_group ?? '—' }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $request->units_required ?? '—' }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                     <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
                                         {{ $request->urgency === 'high' ? 'bg-red-100 text-red-800' : 
@@ -126,7 +126,7 @@
                                         {{ ucfirst($request->urgency) }}
                                     </span>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $request->required_date }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $request->required_date ? $request->required_date->format('Y-m-d') : '—' }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                     <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
                                         {{ $request->status === 'completed' ? 'bg-green-100 text-green-800' : 
