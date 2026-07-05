@@ -14,11 +14,16 @@ class ShaafiRequestAgentController extends Controller
         $query = $this->scopedQuery()->with(['hospital', 'reviewer']);
 
         if ($request->filled('search')) {
-            $search = $request->search;
+            $search = trim($request->search);
             $query->where(function ($q) use ($search) {
                 $q->where('reference_number', 'like', "%{$search}%")
                     ->orWhere('full_name', 'like', "%{$search}%")
-                    ->orWhere('mobile_number', 'like', "%{$search}%");
+                    ->orWhere('mobile_number', 'like', "%{$search}%")
+                    ->orWhere('external_reference', 'like', "%{$search}%");
+
+                if (! str_starts_with(strtoupper($search), 'SR-')) {
+                    $q->orWhere('reference_number', 'like', '%SR-' . $search . '%');
+                }
             });
         }
 
@@ -140,7 +145,12 @@ class ShaafiRequestAgentController extends Controller
             return $query;
         }
 
-        return $query->where('hospital_id', $user->hospital_id);
+        // Hospital staff only see their hospital; system admins without a hospital see all.
+        if ($user->hospital_id) {
+            $query->where('hospital_id', $user->hospital_id);
+        }
+
+        return $query;
     }
 
     private function authorizeRequest(ShaafiRequest $shaafiRequest): void
@@ -156,7 +166,7 @@ class ShaafiRequestAgentController extends Controller
             return;
         }
 
-        if ($shaafiRequest->hospital_id !== $user->hospital_id) {
+        if ($user->hospital_id && $shaafiRequest->hospital_id !== $user->hospital_id) {
             abort(403);
         }
     }

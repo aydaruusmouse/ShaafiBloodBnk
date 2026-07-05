@@ -31,7 +31,7 @@
             <form method="GET" action="{{ route('shaafi-requests.index') }}" class="grid grid-cols-1 md:grid-cols-6 gap-4">
                 <div>
                     <label class="block text-xs font-medium text-gray-500 mb-1">Search</label>
-                    <input type="text" name="search" value="{{ request('search') }}" placeholder="Name, phone, ref..."
+                    <input type="text" name="search" value="{{ request('search') }}" placeholder="SR-..., name, phone"
                         class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
                 </div>
                 <div>
@@ -123,7 +123,14 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="8" class="px-6 py-8 text-center text-sm text-gray-500">No Shaafi App requests found.</td>
+                        <td colspan="8" class="px-6 py-8 text-center text-sm text-gray-500">
+                            @if(request()->hasAny(['search', 'request_type', 'status', 'city', 'hospital_id']))
+                                No requests match your filters.
+                                <a href="{{ route('shaafi-requests.index') }}" class="text-blue-600 hover:underline">Clear filters</a>
+                            @else
+                                No Shaafi App requests found yet.
+                            @endif
+                        </td>
                     </tr>
                     @endforelse
                 </tbody>
