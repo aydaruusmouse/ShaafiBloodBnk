@@ -34,6 +34,7 @@ class Donor extends Model
 
     protected $casts = [
         'date_of_birth' => 'date',
+        'last_donation_date' => 'datetime',
         'age' => 'integer',
         'weight' => 'float',
         'is_eligible' => 'boolean',

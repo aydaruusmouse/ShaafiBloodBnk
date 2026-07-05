@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Gate;   // ← import Gate here
+use Illuminate\Support\Facades\URL;
 use App\Models\User;                    // ← import your User model
 
 use Illuminate\Support\Facades\DB;
@@ -26,6 +27,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
+        if (config('app.force_https')) {
+            URL::forceScheme('https');
+        }
+
         // Add this block:
         Gate::define('manage-users', function (User $user) {
             // Only role “admin” can manage roles/users/settings:

@@ -144,6 +144,8 @@ Route::middleware('auth')->group(function () {
     Route::resource('donors', DonorController::class);
 });
 
+Route::get('sms-campaigns/preview-recipients', [SmsCampaignController::class, 'previewRecipients'])
+    ->name('sms-campaigns.preview-recipients');
 Route::resource('sms-campaigns', SmsCampaignController::class);
 Route::post('sms-campaigns/{smsCampaign}/send', [SmsCampaignController::class, 'send'])->name('sms-campaigns.send');
 Route::get('/sms-campaigns/reports', [SmsCampaignController::class, 'reports'])->name('sms-campaigns.reports');

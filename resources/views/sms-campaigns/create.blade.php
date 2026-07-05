@@ -222,7 +222,22 @@
         const messageTemplate = document.getElementById('message_template').value;
 
         try {
-            const response = await fetch(`/api/preview-recipients?blood_type=${bloodType}`);
+            const params = new URLSearchParams();
+            if (bloodType) {
+                params.set('blood_type', bloodType);
+            }
+
+            const response = await fetch(`{{ route('sms-campaigns.preview-recipients') }}?${params.toString()}`, {
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to load recipients preview');
+            }
+
             const data = await response.json();
 
             // Update recipient count

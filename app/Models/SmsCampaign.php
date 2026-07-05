@@ -35,8 +35,8 @@ class SmsCampaign extends Model
             $query->where('blood_group', $this->blood_type);
         }
 
-        return $query->whereNotNull('Tell')
-                    ->where('Tell', '!=', '')
+        return $query->whereNotNull('tell')
+                    ->where('tell', '!=', '')
                     ->get();
     }
 

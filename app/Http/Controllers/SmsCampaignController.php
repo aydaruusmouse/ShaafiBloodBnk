@@ -248,4 +248,34 @@ class SmsCampaignController extends Controller
             'totalFailedMessages'
         ));
     }
+
+    public function previewRecipients(Request $request)
+    {
+        $bloodType = $request->query('blood_type');
+
+        if ($bloodType && !in_array($bloodType, ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'], true)) {
+            return response()->json(['message' => 'Invalid blood type'], 422);
+        }
+
+        $query = Donor::query();
+
+        if ($bloodType) {
+            $query->where('blood_group', $bloodType);
+        }
+
+        $recipients = $query->whereNotNull('tell')
+            ->where('tell', '!=', '')
+            ->get(['first_name', 'last_name', 'blood_group', 'tell', 'last_donation_date'])
+            ->map(fn (Donor $donor) => [
+                'name' => trim($donor->first_name . ' ' . $donor->last_name),
+                'blood_group' => $donor->blood_group,
+                'phone' => $donor->tell,
+                'last_donation' => $donor->last_donation_date
+                    ? $donor->last_donation_date->format('M d, Y')
+                    : null,
+            ])
+            ->values();
+
+        return response()->json(['recipients' => $recipients]);
+    }
 }
