@@ -231,7 +231,9 @@
                 headers: {
                     'Accept': 'application/json',
                     'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '',
                 },
+                credentials: 'same-origin',
             });
 
             if (!response.ok) {

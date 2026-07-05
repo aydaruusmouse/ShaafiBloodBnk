@@ -36,7 +36,7 @@ class ShaafiRequestAgentController extends Controller
         }
 
         if ($request->filled('city')) {
-            $query->where('city', $request->city);
+            $query->whereRaw('LOWER(city) = ?', [strtolower($request->city)]);
         }
 
         if ($request->filled('hospital_id')) {
@@ -54,8 +54,12 @@ class ShaafiRequestAgentController extends Controller
         $hospitals = Hospital::where('status', 'active')->orderBy('name')->get(['id', 'name', 'city']);
 
         $pendingCount = $this->scopedQuery()->where('status', 'pending')->count();
+        $scopeMeta = $this->scopeMeta();
+        $totalInDatabase = ShaafiRequest::count();
 
-        return view('shaafi-requests.index', compact('requests', 'cities', 'hospitals', 'pendingCount'));
+        return view('shaafi-requests.index', compact(
+            'requests', 'cities', 'hospitals', 'pendingCount', 'scopeMeta', 'totalInDatabase'
+        ));
     }
 
     public function show(ShaafiRequest $shaafiRequest)
@@ -145,29 +149,91 @@ class ShaafiRequestAgentController extends Controller
             return $query;
         }
 
-        // Hospital staff only see their hospital; system admins without a hospital see all.
+        // Hospital staff see their hospital + all requests in the same city (case-insensitive).
         if ($user->hospital_id) {
-            $query->where('hospital_id', $user->hospital_id);
+            $hospital = Hospital::find($user->hospital_id);
+
+            $query->where(function ($q) use ($user, $hospital) {
+                $q->where('hospital_id', $user->hospital_id);
+
+                if ($hospital?->city) {
+                    $q->orWhereRaw('LOWER(city) = ?', [strtolower($hospital->city)]);
+                }
+            });
         }
 
         return $query;
     }
 
-    private function authorizeRequest(ShaafiRequest $shaafiRequest): void
+    private function userCanAccessRequest(ShaafiRequest $shaafiRequest): bool
     {
         $user = auth()->user();
 
         if ($user->isSuperAdmin()) {
             $tenantId = (int) session('active_hospital_id', 0);
-            if ($tenantId > 0 && $shaafiRequest->hospital_id !== $tenantId) {
-                abort(403);
-            }
 
-            return;
+            return $tenantId <= 0 || $shaafiRequest->hospital_id === $tenantId;
         }
 
-        if ($user->hospital_id && $shaafiRequest->hospital_id !== $user->hospital_id) {
+        if (! $user->hospital_id) {
+            return true;
+        }
+
+        if ($shaafiRequest->hospital_id === $user->hospital_id) {
+            return true;
+        }
+
+        $hospital = Hospital::find($user->hospital_id);
+
+        return $hospital?->city
+            && strtolower($shaafiRequest->city) === strtolower($hospital->city);
+    }
+
+    private function authorizeRequest(ShaafiRequest $shaafiRequest): void
+    {
+        if (! $this->userCanAccessRequest($shaafiRequest)) {
             abort(403);
         }
+    }
+
+    private function scopeMeta(): array
+    {
+        $user = auth()->user();
+
+        if ($user->isSuperAdmin()) {
+            $tenantId = (int) session('active_hospital_id', 0);
+            if ($tenantId > 0) {
+                $hospital = Hospital::find($tenantId);
+
+                return [
+                    'label' => 'Super Admin view',
+                    'detail' => 'Filtered to: ' . ($hospital?->name ?? "Hospital #{$tenantId}"),
+                    'can_clear_tenant' => true,
+                ];
+            }
+
+            return [
+                'label' => 'Super Admin view',
+                'detail' => 'Showing all hospitals',
+                'can_clear_tenant' => false,
+            ];
+        }
+
+        if ($user->hospital_id) {
+            $hospital = $user->hospital ?? Hospital::find($user->hospital_id);
+
+            return [
+                'label' => 'Hospital view',
+                'detail' => 'Showing: ' . ($hospital?->name ?? "Hospital #{$user->hospital_id}")
+                    . ($hospital?->city ? ' and all requests in ' . $hospital->city : ''),
+                'can_clear_tenant' => false,
+            ];
+        }
+
+        return [
+            'label' => 'System view',
+            'detail' => 'Showing all hospitals',
+            'can_clear_tenant' => false,
+        ];
     }
 }

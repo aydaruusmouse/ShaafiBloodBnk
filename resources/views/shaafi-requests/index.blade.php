@@ -27,6 +27,24 @@
             </div>
         @endif
 
+        <div class="mb-4 bg-blue-50 border border-blue-200 text-blue-800 px-4 py-3 rounded text-sm">
+            <strong>{{ $scopeMeta['label'] }}:</strong> {{ $scopeMeta['detail'] }}.
+            @if($totalInDatabase > 0 && $requests->total() === 0)
+                <span class="block mt-1 text-blue-900">
+                    There are {{ $totalInDatabase }} request(s) in the system, but none match your current access scope or filters.
+                    @if($scopeMeta['can_clear_tenant'])
+                        <form action="{{ route('super-admin.clear-tenant-context') }}" method="POST" class="inline">
+                            @csrf
+                            <button type="submit" class="underline font-medium">Clear hospital filter</button>
+                        </form>
+                        to see all.
+                    @elseif(auth()->user()->hospital_id)
+                        Your account is linked to a different hospital than these requests (they are for <strong>Hargeisa Hospital</strong>).
+                    @endif
+                </span>
+            @endif
+        </div>
+
         <div class="bg-white shadow sm:rounded-lg mb-6 p-4">
             <form method="GET" action="{{ route('shaafi-requests.index') }}" class="grid grid-cols-1 md:grid-cols-6 gap-4">
                 <div>

@@ -63,6 +63,8 @@ class SmsCampaignController extends Controller
      */
     public function show(SmsCampaign $smsCampaign)
     {
+        $this->ensureTenantContext();
+
         return view('sms-campaigns.show', compact('smsCampaign'));
     }
 
@@ -103,6 +105,8 @@ class SmsCampaignController extends Controller
 
     protected function sendCampaign(SmsCampaign $campaign)
     {
+        $this->ensureTenantContext();
+
         try {
             // Update campaign status to sending
             $campaign->update(['status' => 'sending']);
@@ -251,9 +255,11 @@ class SmsCampaignController extends Controller
 
     public function previewRecipients(Request $request)
     {
-        $bloodType = $request->query('blood_type');
+        $this->ensureTenantContext();
 
-        if ($bloodType && !in_array($bloodType, ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'], true)) {
+        $bloodType = $this->normalizeBloodType($request->query('blood_type'));
+
+        if ($bloodType && ! in_array($bloodType, ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'], true)) {
             return response()->json(['message' => 'Invalid blood type'], 422);
         }
 
@@ -277,5 +283,25 @@ class SmsCampaignController extends Controller
             ->values();
 
         return response()->json(['recipients' => $recipients]);
+    }
+
+    private function normalizeBloodType(?string $bloodType): ?string
+    {
+        if ($bloodType === null || $bloodType === '') {
+            return null;
+        }
+
+        $bloodType = trim($bloodType);
+
+        // Query strings may decode "+" as a space (e.g. "O " instead of "O+").
+        if (preg_match('/^(A|B|AB|O)\s*$/i', $bloodType, $matches)) {
+            return strtoupper($matches[1]) === 'AB' ? 'AB+' : strtoupper($matches[1]) . '+';
+        }
+
+        if (preg_match('/^(A|B|AB|O)\s*-\s*$/i', $bloodType, $matches)) {
+            return strtoupper($matches[1]) === 'AB' ? 'AB-' : strtoupper($matches[1]) . '-';
+        }
+
+        return $bloodType;
     }
 }

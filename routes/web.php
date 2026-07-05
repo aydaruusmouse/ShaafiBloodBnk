@@ -145,9 +145,15 @@ Route::middleware('auth')->group(function () {
     Route::resource('donors', DonorController::class);
 });
 
-Route::get('sms-campaigns/preview-recipients', [SmsCampaignController::class, 'previewRecipients'])
-    ->name('sms-campaigns.preview-recipients');
-Route::resource('sms-campaigns', SmsCampaignController::class);
+Route::middleware('auth')->group(function () {
+    Route::get('sms-campaigns/preview-recipients', [SmsCampaignController::class, 'previewRecipients'])
+        ->name('sms-campaigns.preview-recipients');
+    Route::resource('sms-campaigns', SmsCampaignController::class);
+    Route::post('sms-campaigns/{smsCampaign}/send', [SmsCampaignController::class, 'send'])->name('sms-campaigns.send');
+    Route::get('/sms-campaigns/reports', [SmsCampaignController::class, 'reports'])->name('sms-campaigns.reports');
+    Route::get('/sms-campaigns/test-connection', [SmsCampaignController::class, 'testConnection'])->name('sms-campaigns.test-connection');
+    Route::post('/sms-campaigns/send-test', [SmsCampaignController::class, 'sendTestSms'])->name('sms-campaigns.send-test');
+});
 
 Route::middleware(['auth', 'can:manage-shaafi-requests'])->prefix('shaafi-requests')->name('shaafi-requests.')->group(function () {
     Route::get('/', [ShaafiRequestAgentController::class, 'index'])->name('index');
@@ -156,10 +162,6 @@ Route::middleware(['auth', 'can:manage-shaafi-requests'])->prefix('shaafi-reques
     Route::post('/{shaafiRequest}/approve', [ShaafiRequestAgentController::class, 'approve'])->name('approve');
     Route::post('/{shaafiRequest}/reject', [ShaafiRequestAgentController::class, 'reject'])->name('reject');
 });
-Route::post('sms-campaigns/{smsCampaign}/send', [SmsCampaignController::class, 'send'])->name('sms-campaigns.send');
-Route::get('/sms-campaigns/reports', [SmsCampaignController::class, 'reports'])->name('sms-campaigns.reports');
-Route::get('/sms-campaigns/test-connection', [SmsCampaignController::class, 'testConnection'])->name('sms-campaigns.test-connection');
-Route::post('/sms-campaigns/send-test', [SmsCampaignController::class, 'sendTestSms'])->name('sms-campaigns.send-test');
 
 // Blood Requests
 Route::resource('blood-requests', BloodRequestController::class);
