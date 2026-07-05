@@ -23,6 +23,8 @@ class ShaafiRequest extends Model
         'scheduled_at',
         'reviewed_by',
         'reviewed_at',
+        'sms_sent_at',
+        'sms_last_error',
         'shaafi_user_id',
         'external_reference',
     ];
@@ -31,6 +33,7 @@ class ShaafiRequest extends Model
         'blood_quantity' => 'integer',
         'scheduled_at' => 'datetime',
         'reviewed_at' => 'datetime',
+        'sms_sent_at' => 'datetime',
     ];
 
     protected static function booted(): void

@@ -8,6 +8,7 @@
     <div class="flex gap-2">
         <form action="{{ route('shaafi-requests.approve', $item) }}" method="POST" class="flex-1">
             @csrf
+            <input type="hidden" name="send_sms" value="1">
             <button type="submit"
                 style="background-color:#16a34a;color:#fff;"
                 class="w-full inline-flex items-center justify-center gap-1 px-3 py-2 rounded-md text-xs font-semibold hover:opacity-90"

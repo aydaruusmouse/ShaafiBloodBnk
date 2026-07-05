@@ -4,11 +4,17 @@ namespace App\Http\Controllers;
 
 use App\Models\Hospital;
 use App\Models\ShaafiRequest;
+use App\Services\ShaafiRequestNotificationService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
 class ShaafiRequestAgentController extends Controller
 {
+    public function __construct(
+        private ShaafiRequestNotificationService $notifications
+    ) {}
+
     public function index(Request $request)
     {
         $query = $this->scopedQuery()->with(['hospital', 'reviewer']);
@@ -80,7 +86,8 @@ class ShaafiRequestAgentController extends Controller
                 'under_review', 'approved', 'rejected', 'scheduled', 'completed', 'cancelled',
             ])],
             'agent_notes' => ['nullable', 'string', 'max:5000'],
-            'scheduled_at' => ['nullable', 'date', 'after:now'],
+            'scheduled_at' => ['nullable', 'date'],
+            'send_sms' => ['nullable', 'boolean'],
         ]);
 
         if ($validated['status'] === 'scheduled' && empty($validated['scheduled_at'])) {
@@ -95,12 +102,27 @@ class ShaafiRequestAgentController extends Controller
             'reviewed_at' => now(),
         ]);
 
-        return redirect()
-            ->route('shaafi-requests.show', $shaafiRequest)
-            ->with('success', 'Request updated successfully.');
+        $shaafiRequest->refresh();
+
+        $smsResult = null;
+        if ($request->boolean('send_sms')) {
+            $event = $this->notifications->resolveEvent(
+                $shaafiRequest->status,
+                $shaafiRequest->scheduled_at?->toDateTimeString()
+            );
+            if ($event) {
+                $smsResult = $this->notifications->sendForStatusChange($shaafiRequest, $event);
+            }
+        }
+
+        return $this->redirectWithSmsResult(
+            $shaafiRequest,
+            'Request updated successfully.',
+            $smsResult
+        );
     }
 
-    public function approve(ShaafiRequest $shaafiRequest)
+    public function approve(Request $request, ShaafiRequest $shaafiRequest)
     {
         $this->authorizeRequest($shaafiRequest);
 
@@ -110,9 +132,24 @@ class ShaafiRequestAgentController extends Controller
             'reviewed_at' => now(),
         ]);
 
-        return redirect()
-            ->route('shaafi-requests.show', $shaafiRequest)
-            ->with('success', 'Donor/request approved successfully.');
+        $shaafiRequest->refresh();
+
+        $smsResult = null;
+        if ($request->boolean('send_sms')) {
+            $event = $this->notifications->resolveEvent(
+                $shaafiRequest->status,
+                $shaafiRequest->scheduled_at?->toDateTimeString()
+            );
+            if ($event) {
+                $smsResult = $this->notifications->sendForStatusChange($shaafiRequest, $event);
+            }
+        }
+
+        return $this->redirectWithSmsResult(
+            $shaafiRequest,
+            'Donor/request approved successfully.',
+            $smsResult
+        );
     }
 
     public function reject(Request $request, ShaafiRequest $shaafiRequest)
@@ -121,6 +158,7 @@ class ShaafiRequestAgentController extends Controller
 
         $validated = $request->validate([
             'agent_notes' => ['nullable', 'string', 'max:5000'],
+            'send_sms' => ['nullable', 'boolean'],
         ]);
 
         $shaafiRequest->update([
@@ -130,9 +168,42 @@ class ShaafiRequestAgentController extends Controller
             'reviewed_at' => now(),
         ]);
 
-        return redirect()
-            ->route('shaafi-requests.show', $shaafiRequest)
-            ->with('success', 'Request rejected.');
+        $shaafiRequest->refresh();
+
+        $smsResult = null;
+        if ($request->boolean('send_sms')) {
+            $smsResult = $this->notifications->sendForStatusChange($shaafiRequest, 'rejected');
+        }
+
+        return $this->redirectWithSmsResult(
+            $shaafiRequest,
+            'Request rejected.',
+            $smsResult
+        );
+    }
+
+    private function redirectWithSmsResult(
+        ShaafiRequest $shaafiRequest,
+        string $message,
+        ?array $smsResult
+    ): RedirectResponse {
+        $redirect = redirect()->route('shaafi-requests.show', $shaafiRequest);
+
+        if ($smsResult === null) {
+            return $redirect->with('success', $message);
+        }
+
+        if ($smsResult['success'] ?? false) {
+            return $redirect->with('success', $message . ' SMS notification sent to ' . $shaafiRequest->mobile_number . '.');
+        }
+
+        if ($smsResult['skipped'] ?? false) {
+            return $redirect->with('success', $message);
+        }
+
+        return $redirect
+            ->with('success', $message)
+            ->with('warning', 'SMS could not be sent: ' . ($smsResult['message'] ?? 'Unknown error'));
     }
 
     private function scopedQuery()
@@ -149,7 +220,6 @@ class ShaafiRequestAgentController extends Controller
             return $query;
         }
 
-        // Hospital staff see their hospital + all requests in the same city (case-insensitive).
         if ($user->hospital_id) {
             $hospital = Hospital::find($user->hospital_id);
 

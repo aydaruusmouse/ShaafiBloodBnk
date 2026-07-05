@@ -17,6 +17,9 @@
         @if(session('error'))
             <div class="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">{{ session('error') }}</div>
         @endif
+        @if(session('warning'))
+            <div class="mb-4 bg-yellow-100 border border-yellow-400 text-yellow-800 px-4 py-3 rounded">{{ session('warning') }}</div>
+        @endif
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div class="lg:col-span-2 space-y-6">
@@ -79,6 +82,13 @@
                     @if($shaafiRequest->reviewer)
                         <p class="mt-1 text-xs text-gray-500">Last reviewed by {{ $shaafiRequest->reviewer->name }}</p>
                     @endif
+                    @if($shaafiRequest->sms_sent_at)
+                        <p class="mt-2 text-xs text-green-700">
+                            <i class="ri-message-2-line"></i> SMS sent {{ $shaafiRequest->sms_sent_at->format('M d, Y H:i') }}
+                        </p>
+                    @elseif($shaafiRequest->sms_last_error)
+                        <p class="mt-2 text-xs text-red-600">SMS failed: {{ $shaafiRequest->sms_last_error }}</p>
+                    @endif
                 </div>
 
                 <div class="bg-white shadow sm:rounded-lg p-6 border-2 border-blue-100">
@@ -88,6 +98,7 @@
                     <div class="flex flex-col sm:flex-row gap-2 mb-4">
                         <form action="{{ route('shaafi-requests.approve', $shaafiRequest) }}" method="POST" class="flex-1">
                             @csrf
+                            <input type="hidden" name="send_sms" value="1">
                             <button type="submit" style="background-color:#16a34a;color:#fff;" class="w-full px-4 py-2 rounded-md text-sm font-semibold hover:opacity-90">
                                 <i class="ri-check-line"></i> Approve
                             </button>
@@ -122,7 +133,14 @@
                         <div>
                             <label class="block text-sm font-medium text-gray-700">Agent Notes</label>
                             <textarea name="agent_notes" rows="4" class="mt-1 w-full rounded-md border-gray-300 shadow-sm sm:text-sm">{{ old('agent_notes', $shaafiRequest->agent_notes) }}</textarea>
+                            <p class="mt-1 text-xs text-gray-500">Included in the SMS when a schedule time is set.</p>
                         </div>
+                        <label class="flex items-center gap-2 text-sm text-gray-700">
+                            <input type="hidden" name="send_sms" value="0">
+                            <input type="checkbox" name="send_sms" value="1" checked class="rounded border-gray-300 text-blue-600">
+                            Send SMS notification to {{ $shaafiRequest->mobile_number }}
+                        </label>
+                        <p class="text-xs text-gray-500">Uses the same Telesom SMS API as SMS Campaigns.</p>
                         <button type="submit" style="background-color:#2563eb;color:#fff;" class="w-full px-4 py-2 rounded-md text-sm font-semibold hover:opacity-90">Save Changes</button>
                     </form>
                 </div>
