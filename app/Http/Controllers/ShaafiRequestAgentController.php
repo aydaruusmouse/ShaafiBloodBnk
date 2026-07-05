@@ -221,15 +221,7 @@ class ShaafiRequestAgentController extends Controller
         }
 
         if ($user->hospital_id) {
-            $hospital = Hospital::find($user->hospital_id);
-
-            $query->where(function ($q) use ($user, $hospital) {
-                $q->where('hospital_id', $user->hospital_id);
-
-                if ($hospital?->city) {
-                    $q->orWhereRaw('LOWER(city) = ?', [strtolower($hospital->city)]);
-                }
-            });
+            $query->where('hospital_id', $user->hospital_id);
         }
 
         return $query;
@@ -249,14 +241,7 @@ class ShaafiRequestAgentController extends Controller
             return true;
         }
 
-        if ($shaafiRequest->hospital_id === $user->hospital_id) {
-            return true;
-        }
-
-        $hospital = Hospital::find($user->hospital_id);
-
-        return $hospital?->city
-            && strtolower($shaafiRequest->city) === strtolower($hospital->city);
+        return $shaafiRequest->hospital_id === $user->hospital_id;
     }
 
     private function authorizeRequest(ShaafiRequest $shaafiRequest): void
@@ -294,8 +279,7 @@ class ShaafiRequestAgentController extends Controller
 
             return [
                 'label' => 'Hospital view',
-                'detail' => 'Showing: ' . ($hospital?->name ?? "Hospital #{$user->hospital_id}")
-                    . ($hospital?->city ? ' and all requests in ' . $hospital->city : ''),
+                'detail' => 'Showing requests assigned to ' . ($hospital?->name ?? "Hospital #{$user->hospital_id}"),
                 'can_clear_tenant' => false,
             ];
         }
