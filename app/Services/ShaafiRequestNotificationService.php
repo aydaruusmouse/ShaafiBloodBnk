@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\ShaafiRequest;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 
 class ShaafiRequestNotificationService
 {
@@ -30,10 +31,7 @@ class ShaafiRequestNotificationService
             $result = $this->smsService->sendSms($phone, $message);
 
             if ($result['success']) {
-                $request->update([
-                    'sms_sent_at' => now(),
-                    'sms_last_error' => null,
-                ]);
+                $this->recordSmsResult($request, true);
 
                 Log::info('Shaafi request SMS sent', [
                     'reference' => $request->reference_number,
@@ -41,14 +39,12 @@ class ShaafiRequestNotificationService
                     'phone' => $phone,
                 ]);
             } else {
-                $request->update([
-                    'sms_last_error' => $result['message'] ?? 'Unknown SMS error',
-                ]);
+                $this->recordSmsResult($request, false, $result['message'] ?? 'Unknown SMS error');
             }
 
             return $result;
         } catch (\Throwable $e) {
-            $request->update(['sms_last_error' => $e->getMessage()]);
+            $this->recordSmsResult($request, false, $e->getMessage());
 
             Log::error('Shaafi request SMS failed', [
                 'reference' => $request->reference_number,
@@ -101,5 +97,24 @@ class ShaafiRequestNotificationService
         $message = str_replace(array_keys($replacements), array_values($replacements), $template);
 
         return trim(preg_replace('/\s+/', ' ', $message));
+    }
+
+    private function recordSmsResult(ShaafiRequest $request, bool $success, ?string $error = null): void
+    {
+        if (! Schema::hasColumn('shaafi_requests', 'sms_sent_at')) {
+            return;
+        }
+
+        try {
+            $request->update([
+                'sms_sent_at' => $success ? now() : $request->sms_sent_at,
+                'sms_last_error' => $success ? null : $error,
+            ]);
+        } catch (\Throwable $e) {
+            Log::warning('Could not record Shaafi SMS status', [
+                'reference' => $request->reference_number,
+                'error' => $e->getMessage(),
+            ]);
+        }
     }
 }
