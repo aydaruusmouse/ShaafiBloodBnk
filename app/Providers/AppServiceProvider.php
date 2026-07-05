@@ -27,7 +27,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        if (config('app.force_https')) {
+        // Generate https:// links when APP_URL uses HTTPS (e.g. behind HAProxy SSL termination).
+        if (str_starts_with((string) config('app.url'), 'https://')) {
             URL::forceScheme('https');
         }
 
