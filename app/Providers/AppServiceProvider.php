@@ -48,16 +48,7 @@ class AppServiceProvider extends ServiceProvider
         });
 
         Gate::define('manage-shaafi-requests', function (User $user) {
-            return in_array(optional($user->role)->name, [
-                'super_admin',
-                'admin',
-                'hospital_admin',
-                'doctor',
-                'reception',
-                'nurse',
-                'lab',
-                'staff',
-            ]);
+            return $user->canManageShaafiRequests();
         });
     }
 }

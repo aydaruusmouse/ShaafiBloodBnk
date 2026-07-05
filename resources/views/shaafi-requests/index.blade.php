@@ -96,86 +96,100 @@
             </form>
         </div>
 
-        <div class="bg-white shadow overflow-hidden sm:rounded-lg">
-            <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
-                    <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Reference</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Blood</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Hospital</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Submitted</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
-                    </tr>
-                </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
-                    @forelse($requests as $request)
-                    <tr>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ $request->reference_number }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $request->request_type_label }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {{ $request->full_name }}
-                            <div class="text-xs text-gray-400">{{ $request->mobile_number }}</div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {{ $request->blood_group }}
-                            @if($request->blood_quantity)
-                                <span class="text-xs text-gray-400">({{ $request->blood_quantity }} bag{{ $request->blood_quantity > 1 ? 's' : '' }})</span>
-                            @endif
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {{ $request->hospital->name }}
-                            <div class="text-xs text-gray-400">{{ $request->city }}</div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $request->status_badge_class }}">
-                                {{ ucfirst(str_replace('_', ' ', $request->status)) }}
-                            </span>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $request->created_at->format('M d, Y H:i') }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                            <div class="flex flex-wrap items-center gap-2">
-                                <a href="{{ route('shaafi-requests.show', $request) }}"
-                                   class="inline-flex items-center px-3 py-1.5 border border-blue-600 text-blue-600 rounded-md text-xs font-medium hover:bg-blue-50">
-                                    Review
+        @forelse($requests as $item)
+        {{-- Mobile / tablet card layout --}}
+        <div class="lg:hidden bg-white shadow sm:rounded-lg mb-4 p-4 border border-gray-200">
+            <div class="mb-3">
+                @include('shaafi-requests.partials.action-buttons', ['item' => $item])
+            </div>
+            <div class="space-y-1 text-sm">
+                <p class="font-semibold text-gray-900">
+                    <a href="{{ route('shaafi-requests.show', $item) }}" class="text-blue-600 hover:underline">{{ $item->reference_number }}</a>
+                    <span class="ml-2 px-2 py-0.5 text-xs rounded-full {{ $item->status_badge_class }}">
+                        {{ ucfirst(str_replace('_', ' ', $item->status)) }}
+                    </span>
+                </p>
+                <p class="text-gray-600">{{ $item->request_type_label }} · {{ $item->blood_group }}@if($item->blood_quantity) ({{ $item->blood_quantity }} bags)@endif</p>
+                <p class="text-gray-900">{{ $item->full_name }} · {{ $item->mobile_number }}</p>
+                <p class="text-gray-500">{{ $item->hospital->name }}, {{ $item->city }}</p>
+                <p class="text-xs text-gray-400">{{ $item->created_at->format('M d, Y H:i') }}</p>
+            </div>
+        </div>
+        @empty
+        <div class="lg:hidden bg-white shadow sm:rounded-lg p-8 text-center text-sm text-gray-500">
+            @if(request()->hasAny(['search', 'request_type', 'status', 'city', 'hospital_id']))
+                No requests match your filters.
+                <a href="{{ route('shaafi-requests.index') }}" class="text-blue-600 hover:underline">Clear filters</a>
+            @else
+                No Shaafi App requests found yet.
+            @endif
+        </div>
+        @endforelse
+
+        {{-- Desktop table: Actions column first (always visible) --}}
+        <div class="hidden lg:block bg-white shadow sm:rounded-lg">
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase w-52">Actions</th>
+                            <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">Reference</th>
+                            <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
+                            <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
+                            <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">Blood</th>
+                            <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">Hospital</th>
+                            <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                            <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">Submitted</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        @forelse($requests as $item)
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-3 py-3 align-top">
+                                @include('shaafi-requests.partials.action-buttons', ['item' => $item])
+                            </td>
+                            <td class="px-3 py-3 whitespace-nowrap text-sm font-medium">
+                                <a href="{{ route('shaafi-requests.show', $item) }}" class="text-blue-600 hover:underline">
+                                    {{ $item->reference_number }}
                                 </a>
-                                @if(in_array($request->status, ['pending', 'under_review']))
-                                <form action="{{ route('shaafi-requests.approve', $request) }}" method="POST" class="inline">
-                                    @csrf
-                                    <button type="submit"
-                                        class="inline-flex items-center px-3 py-1.5 bg-green-600 text-white rounded-md text-xs font-medium hover:bg-green-700"
-                                        onclick="return confirm('Approve {{ $request->reference_number }}?')">
-                                        Approve
-                                    </button>
-                                </form>
-                                <form action="{{ route('shaafi-requests.reject', $request) }}" method="POST" class="inline">
-                                    @csrf
-                                    <button type="submit"
-                                        class="inline-flex items-center px-3 py-1.5 bg-red-600 text-white rounded-md text-xs font-medium hover:bg-red-700"
-                                        onclick="return confirm('Reject {{ $request->reference_number }}?')">
-                                        Reject
-                                    </button>
-                                </form>
+                            </td>
+                            <td class="px-3 py-3 whitespace-nowrap text-sm text-gray-500">{{ $item->request_type_label }}</td>
+                            <td class="px-3 py-3 whitespace-nowrap text-sm text-gray-900">
+                                {{ $item->full_name }}
+                                <div class="text-xs text-gray-400">{{ $item->mobile_number }}</div>
+                            </td>
+                            <td class="px-3 py-3 whitespace-nowrap text-sm text-gray-500">
+                                {{ $item->blood_group }}
+                                @if($item->blood_quantity)
+                                    <span class="text-xs text-gray-400">({{ $item->blood_quantity }} bag{{ $item->blood_quantity > 1 ? 's' : '' }})</span>
                                 @endif
-                            </div>
-                        </td>
-                    </tr>
-                    @empty
-                    <tr>
-                        <td colspan="8" class="px-6 py-8 text-center text-sm text-gray-500">
-                            @if(request()->hasAny(['search', 'request_type', 'status', 'city', 'hospital_id']))
-                                No requests match your filters.
-                                <a href="{{ route('shaafi-requests.index') }}" class="text-blue-600 hover:underline">Clear filters</a>
-                            @else
-                                No Shaafi App requests found yet.
-                            @endif
-                        </td>
-                    </tr>
-                    @endforelse
-                </tbody>
-            </table>
+                            </td>
+                            <td class="px-3 py-3 whitespace-nowrap text-sm text-gray-500">
+                                {{ $item->hospital->name }}
+                                <div class="text-xs text-gray-400">{{ $item->city }}</div>
+                            </td>
+                            <td class="px-3 py-3 whitespace-nowrap">
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $item->status_badge_class }}">
+                                    {{ ucfirst(str_replace('_', ' ', $item->status)) }}
+                                </span>
+                            </td>
+                            <td class="px-3 py-3 whitespace-nowrap text-sm text-gray-500">{{ $item->created_at->format('M d, Y H:i') }}</td>
+                        </tr>
+                        @empty
+                        <tr>
+                            <td colspan="8" class="px-6 py-8 text-center text-sm text-gray-500">
+                                @if(request()->hasAny(['search', 'request_type', 'status', 'city', 'hospital_id']))
+                                    No requests match your filters.
+                                    <a href="{{ route('shaafi-requests.index') }}" class="text-blue-600 hover:underline">Clear filters</a>
+                                @else
+                                    No Shaafi App requests found yet.
+                                @endif
+                            </td>
+                        </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
         </div>
 
         <div class="mt-4">{{ $requests->links() }}</div>

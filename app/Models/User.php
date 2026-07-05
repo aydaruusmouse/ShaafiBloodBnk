@@ -88,4 +88,26 @@ class User extends Authenticatable
     {
         return optional($this->role)->name === 'lab';
     }
+
+    public function roleSlug(): string
+    {
+        $name = optional($this->role)->name ?? '';
+
+        return strtolower(str_replace([' ', '-'], '_', trim($name)));
+    }
+
+    public function canManageShaafiRequests(): bool
+    {
+        return in_array($this->roleSlug(), [
+            'super_admin',
+            'admin',
+            'hospital_admin',
+            'doctor',
+            'reception',
+            'nurse',
+            'lab',
+            'staff',
+            'registration_staff',
+        ], true);
+    }
 }

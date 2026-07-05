@@ -81,20 +81,23 @@
                     @endif
                 </div>
 
-                @can('manage-shaafi-requests')
-                <div class="bg-white shadow sm:rounded-lg p-6">
+                <div class="bg-white shadow sm:rounded-lg p-6 border-2 border-blue-100">
                     <h2 class="text-lg font-medium text-gray-900 mb-4">Agent Actions</h2>
 
                     @if(in_array($shaafiRequest->status, ['pending', 'under_review']))
-                    <div class="flex gap-2 mb-4">
-                        <form action="{{ route('shaafi-requests.approve', $shaafiRequest) }}" method="POST">
+                    <div class="flex flex-col sm:flex-row gap-2 mb-4">
+                        <form action="{{ route('shaafi-requests.approve', $shaafiRequest) }}" method="POST" class="flex-1">
                             @csrf
-                            <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded-md text-sm hover:bg-green-700">Approve</button>
+                            <button type="submit" style="background-color:#16a34a;color:#fff;" class="w-full px-4 py-2 rounded-md text-sm font-semibold hover:opacity-90">
+                                <i class="ri-check-line"></i> Approve
+                            </button>
                         </form>
                         <form action="{{ route('shaafi-requests.reject', $shaafiRequest) }}" method="POST" class="flex-1"
                               onsubmit="return confirm('Reject this request?')">
                             @csrf
-                            <button type="submit" class="w-full px-4 py-2 bg-red-600 text-white rounded-md text-sm hover:bg-red-700">Reject</button>
+                            <button type="submit" style="background-color:#dc2626;color:#fff;" class="w-full px-4 py-2 rounded-md text-sm font-semibold hover:opacity-90">
+                                <i class="ri-close-line"></i> Reject
+                            </button>
                         </form>
                     </div>
                     @endif
@@ -120,10 +123,9 @@
                             <label class="block text-sm font-medium text-gray-700">Agent Notes</label>
                             <textarea name="agent_notes" rows="4" class="mt-1 w-full rounded-md border-gray-300 shadow-sm sm:text-sm">{{ old('agent_notes', $shaafiRequest->agent_notes) }}</textarea>
                         </div>
-                        <button type="submit" class="w-full px-4 py-2 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700">Save Changes</button>
+                        <button type="submit" style="background-color:#2563eb;color:#fff;" class="w-full px-4 py-2 rounded-md text-sm font-semibold hover:opacity-90">Save Changes</button>
                     </form>
                 </div>
-                @endcan
             </div>
         </div>
     </div>
