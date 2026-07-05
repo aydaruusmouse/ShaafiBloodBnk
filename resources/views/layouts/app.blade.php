@@ -122,6 +122,13 @@
                                 <i class="ri-drop-line"></i><span>Blood Requests</span>
                             </a>
 
+                            @can('manage-shaafi-requests')
+                            <a href="{{ route('shaafi-requests.index') }}"
+                               class="sidebar-link {{ request()->routeIs('shaafi-requests.*') ? 'active' : '' }}">
+                                <i class="ri-smartphone-line"></i><span>Shaafi Requests</span>
+                            </a>
+                            @endcan
+
                             @if(auth()->user()->role && auth()->user()->role->name === 'super_admin')
                                 <a href="{{ route('super-admin.hospitals') }}"
                                    class="sidebar-link {{ request()->routeIs('super-admin.hospitals*') ? 'active' : '' }}">

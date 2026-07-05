@@ -16,6 +16,7 @@ use App\Http\Controllers\ReportController;
 use App\Http\Controllers\TransfusionController;
 use App\Http\Controllers\BloodBagController;
 use App\Http\Controllers\SmsCampaignController;
+use App\Http\Controllers\ShaafiRequestAgentController;
 use App\Http\Controllers\DashboardController;
 
 Route::get('/', function () {
@@ -147,6 +148,14 @@ Route::middleware('auth')->group(function () {
 Route::get('sms-campaigns/preview-recipients', [SmsCampaignController::class, 'previewRecipients'])
     ->name('sms-campaigns.preview-recipients');
 Route::resource('sms-campaigns', SmsCampaignController::class);
+
+Route::middleware(['auth', 'can:manage-shaafi-requests'])->prefix('shaafi-requests')->name('shaafi-requests.')->group(function () {
+    Route::get('/', [ShaafiRequestAgentController::class, 'index'])->name('index');
+    Route::get('/{shaafiRequest}', [ShaafiRequestAgentController::class, 'show'])->name('show');
+    Route::patch('/{shaafiRequest}/status', [ShaafiRequestAgentController::class, 'updateStatus'])->name('update-status');
+    Route::post('/{shaafiRequest}/approve', [ShaafiRequestAgentController::class, 'approve'])->name('approve');
+    Route::post('/{shaafiRequest}/reject', [ShaafiRequestAgentController::class, 'reject'])->name('reject');
+});
 Route::post('sms-campaigns/{smsCampaign}/send', [SmsCampaignController::class, 'send'])->name('sms-campaigns.send');
 Route::get('/sms-campaigns/reports', [SmsCampaignController::class, 'reports'])->name('sms-campaigns.reports');
 Route::get('/sms-campaigns/test-connection', [SmsCampaignController::class, 'testConnection'])->name('sms-campaigns.test-connection');
