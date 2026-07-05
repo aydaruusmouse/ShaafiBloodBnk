@@ -52,8 +52,11 @@ class AppServiceProvider extends ServiceProvider
                 'super_admin',
                 'admin',
                 'hospital_admin',
+                'doctor',
                 'reception',
                 'nurse',
+                'lab',
+                'staff',
             ]);
         });
     }

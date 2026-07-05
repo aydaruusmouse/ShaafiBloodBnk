@@ -136,7 +136,30 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $request->created_at->format('M d, Y H:i') }}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                            <a href="{{ route('shaafi-requests.show', $request) }}" class="text-blue-600 hover:text-blue-900">Review</a>
+                            <div class="flex flex-wrap items-center gap-2">
+                                <a href="{{ route('shaafi-requests.show', $request) }}"
+                                   class="inline-flex items-center px-3 py-1.5 border border-blue-600 text-blue-600 rounded-md text-xs font-medium hover:bg-blue-50">
+                                    Review
+                                </a>
+                                @if(in_array($request->status, ['pending', 'under_review']))
+                                <form action="{{ route('shaafi-requests.approve', $request) }}" method="POST" class="inline">
+                                    @csrf
+                                    <button type="submit"
+                                        class="inline-flex items-center px-3 py-1.5 bg-green-600 text-white rounded-md text-xs font-medium hover:bg-green-700"
+                                        onclick="return confirm('Approve {{ $request->reference_number }}?')">
+                                        Approve
+                                    </button>
+                                </form>
+                                <form action="{{ route('shaafi-requests.reject', $request) }}" method="POST" class="inline">
+                                    @csrf
+                                    <button type="submit"
+                                        class="inline-flex items-center px-3 py-1.5 bg-red-600 text-white rounded-md text-xs font-medium hover:bg-red-700"
+                                        onclick="return confirm('Reject {{ $request->reference_number }}?')">
+                                        Reject
+                                    </button>
+                                </form>
+                                @endif
+                            </div>
                         </td>
                     </tr>
                     @empty
